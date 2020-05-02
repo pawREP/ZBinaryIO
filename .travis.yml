@@ -1,23 +1,23 @@
 language: cpp
-os: linux
-dist: bionic
 
 jobs:
   include:
     # GCC
     - os: linux
+      dist: xenial
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-9
+            - g++-9
             - lcov
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
 
     # CLANG
     - os: linux
+      dist: xenial
       addons:
         apt:
           sources:
