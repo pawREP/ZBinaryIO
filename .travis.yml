@@ -4,7 +4,7 @@ jobs:
   include:
     # GCC
     - os: linux
-      dist: xenial
+      dist: bionic
       addons:
         apt:
           sources:
@@ -17,7 +17,7 @@ jobs:
 
     # CLANG
     - os: linux
-      dist: xenial
+      dist: bionic
       addons:
         apt:
           sources:
@@ -35,7 +35,7 @@ script:
   - cmake --version
   - cmake CMakeLists.txt
   - cmake  --build . --target
-  - ctest
+  - ctest -VV
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
