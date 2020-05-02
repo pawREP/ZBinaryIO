@@ -23,7 +23,11 @@ if(ZBINARYREADER_BUILD_TESTS)
       -g         # generate debug info
       --coverage # sets all required flags
     )
-    target_link_options(coverage_config INTERFACE --coverage)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+      target_link_options(coverage_config INTERFACE --coverage)
+    else()
+      target_link_libraries(coverage_config INTERFACE --coverage)
+    endif()
   endif()
 
   enable_testing()
