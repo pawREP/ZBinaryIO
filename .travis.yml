@@ -14,6 +14,11 @@ jobs:
             - lcov
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+      script:
+        - cmake --version
+        - cmake -DZBINARYREADER_CODE_COVERAGE=ON CMakeLists.txt
+        - cmake  --build . --target
+        - ctest -VV
 
     # CLANG
     - os: linux
@@ -23,19 +28,18 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - clang-9
+            - clang-10
       env:
-        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9"
+        - MATRIX_EVAL="CC=clang-10 && CXX=clang++-10"
+      script:
+        - cmake --version
+        - cmake CMakeLists.txt
+        - cmake  --build . --target
+        - ctest
 
     
 before_install:
   - eval "${MATRIX_EVAL}"
-
-script:
-  - cmake --version
-  - cmake CMakeLists.txt
-  - cmake  --build . --target
-  - ctest -VV
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
