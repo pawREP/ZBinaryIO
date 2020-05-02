@@ -1,5 +1,9 @@
 language: cpp
 
+compiler:
+- gcc
+- clang
+
 matrix:
   include:
     # GCC-9 
@@ -9,11 +13,12 @@ matrix:
         sources:
           - ubuntu-toolchain-r-test
         packages:
+          - gcc-9
           - g++-9
           - lcov
     env:
       - CC=gcc-9
-        CXX=g++-9
+      - CXX=g++-9
 
     # Clang
     - os: linux
@@ -26,7 +31,7 @@ matrix:
           - lcov
     env:
       - CC=clang-9
-        CXX=clang++-9
+      - CXX=clang++-9
     
 
 script:
