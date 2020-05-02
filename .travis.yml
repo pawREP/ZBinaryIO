@@ -16,8 +16,11 @@ jobs:
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       script:
-        - gcc -v && g++ -v && cmake --version
+        - gcc -v 
+        - g++ -v
         - cmake --version
+        - lcov -version
+        - gcov -version
         - cmake -DZBINARYREADER_CODE_COVERAGE=ON CMakeLists.txt
         - cmake  --build . --target
         - ctest -VV
