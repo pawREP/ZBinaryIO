@@ -12,7 +12,6 @@ jobs:
           packages:
             - g++-9
             - lcov
-            - gcov-9
             - cmake
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
