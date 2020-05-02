@@ -10,6 +10,9 @@ addons:
     packages:
       - g++-9
       - lcov
+env:
+  - CXX=g++-9
+  - C=gcc-9
 
 script:
   - cmake --version
