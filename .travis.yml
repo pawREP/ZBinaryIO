@@ -12,9 +12,11 @@ jobs:
           packages:
             - g++-9
             - lcov
+            - cmake
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
       script:
+        - gcc -v && g++ -v && cmake --version
         - cmake --version
         - cmake -DZBINARYREADER_CODE_COVERAGE=ON CMakeLists.txt
         - cmake  --build . --target
@@ -28,9 +30,10 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - clang-10
+            - clang-9
+            - cmake
       env:
-        - MATRIX_EVAL="CC=clang-10 && CXX=clang++-10"
+        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9"
       script:
         - cmake --version
         - cmake CMakeLists.txt
