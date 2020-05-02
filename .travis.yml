@@ -44,6 +44,11 @@ jobs:
 before_install:
   - eval "${MATRIX_EVAL}"
 
+  - wget http://downloads.sourceforge.net/ltp/lcov-1.14.tar.gz
+  - tar -xvf lcov-1.14.tar.gz
+  - cd lcov-1.14 && sudo make install
+  - cd ..
+
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - lcov --directory . --capture --output-file coverage.info
