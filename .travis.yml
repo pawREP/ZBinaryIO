@@ -1,18 +1,33 @@
 language: cpp
-compiler: gcc
 
-os: linux
+matrix:
+  include:
+    # GCC-9 
+    - os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-9
+          - lcov
+    env:
+      - CC=gcc-9
+        CXX=g++-9
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-9
-      - lcov
-env:
-  - CXX=g++-9
-  - C=gcc-9
+    # Clang
+    - os: linux
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - clang-9
+          - lcov
+    env:
+      - CC=clang-9
+        CXX=clang++-9
+    
 
 script:
   - cmake --version
