@@ -22,23 +22,23 @@ jobs:
         - cmake  --build . --target
         - ctest -VV
 
-    # CLANG
-    - os: linux
-      dist: bionic
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-9
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9"
-      script:
-        - cmake --version
-        - cmake CMakeLists.txt
-        - cmake  --build . --target
-        - ctest
+    # # CLANG
+    # - os: linux
+    #   dist: bionic
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #       packages:
+    #         - clang-9
+    #         - cmake
+    #   env:
+    #     - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9"
+    #   script:
+    #     - cmake --version
+    #     - cmake CMakeLists.txt
+    #     - cmake  --build . --target
+    #     - ctest
 
     
 before_install:
