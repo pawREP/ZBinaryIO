@@ -253,13 +253,19 @@ TYPED_TEST(BinaryReaderTestFixture, ReadLEArrayOfStruct) {
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadStrings) {
-    this->br->seek(0x1C);
+    constexpr int stringsOffset = 0x1C;
+    constexpr int testStrLen = 4;
 
-    ASSERT_STREQ(this->br->template readString<4>().c_str(), "Test");
+    this->br->seek(stringsOffset);
+
+    ASSERT_STREQ(this->br->template readString<testStrLen>().c_str(), "Test");
     ASSERT_STREQ((this->br->template readString<4, BinaryReader::Endianness::LE>().c_str()),
                  "Test");
     ASSERT_STREQ(this->br->readCString().c_str(), "Test");
     ASSERT_STREQ(this->br->template readCString<BinaryReader::Endianness::LE>().c_str(), "Test");
+
+    this->br->seek(stringsOffset);
+    ASSERT_STREQ(this->br->readString(testStrLen).c_str(), "Test");
 }
 
 // Try to read fixed size string which contains null chars
