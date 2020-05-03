@@ -282,6 +282,27 @@ TYPED_TEST(BinaryReaderTestFixture, ReadCopyableType) {
     this->template validatedTrivialLERead<TriviallyCopyableStruct>();
 }
 
+TYPED_TEST(BinaryReaderTestFixture, Sink) {
+    // Sink fundamental type
+    using FT = int; 
+    const auto begin = this->br->tell();
+    this->br->template sink<FT>();
+    ASSERT_EQ(this->br->tell(), begin + sizeof(FT));
+
+    // Sink compound type
+    using CT = TriviallyCopyableStruct;
+    this->br->seek(begin);
+    this->br->template sink<CT>();
+    ASSERT_EQ(this->br->tell(), begin + sizeof(CT));
+
+    // Sink fundamental type array
+    constexpr int arrLen = 4;
+    this->br->seek(begin);
+    this->br->template sink<FT>(arrLen);
+    ASSERT_EQ(this->br->tell(), begin + arrLen * sizeof(FT));
+}
+
+
 TYPED_TEST(BinaryReaderTestFixture, Alignment) {
     // Align zero
     this->br->align();
