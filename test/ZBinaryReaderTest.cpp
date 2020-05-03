@@ -72,7 +72,7 @@ protected:
         }
     }
 
-    static void TeardownTestSuite() {
+    static void TearDownTestSuite() {
         const auto path = getTmpTestDataFilePath();
         if(!path.empty() && std::filesystem::exists(path))
             std::filesystem::remove(path);
