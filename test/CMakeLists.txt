@@ -3,6 +3,7 @@ set(TEST_NAME ${CMAKE_PROJECT_NAME}Test)
 set(TEST_SOURCES 
 	main.cpp
 	ZBinaryReaderTest.cpp
+	ZBinaryWriterTest.cpp
 )
 
 add_executable(${TEST_NAME} ${TEST_SOURCES})
