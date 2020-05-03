@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <assert.h>
+#include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <vector>
-#include <cstdint>
-#include <filesystem>
 
 // Check if system is little endian
 static_assert(static_cast<const uint8_t&>(0x0B00B135) == 0x35);
@@ -91,15 +91,15 @@ public:
     BinaryReader(BinaryReader& br) = delete;
     BinaryReader(BinaryReader&& br) = delete;
 
-    //File Source constructors
-    BinaryReader(const std::filesystem::path& path);
-    BinaryReader(const std::string& path);
-    BinaryReader(const char* path);
+    // File Source constructors
+    explicit BinaryReader(const std::filesystem::path& path);
+    explicit BinaryReader(const std::string& path);
+    explicit BinaryReader(const char* path);
 
     // Buffer Source constructors
     BinaryReader(const char* data, int64_t data_size);
     BinaryReader(std::unique_ptr<char[]> data, int64_t data_size);
-    BinaryReader(std::unique_ptr<ISource> source);
+    explicit BinaryReader(std::unique_ptr<ISource> source);
 
     BinaryReader& operator=(const BinaryReader& br) = delete;
     BinaryReader& operator=(BinaryReader&& br) = delete;
@@ -249,24 +249,22 @@ void reverseEndianness<std::string>(std::string& str) {
     std::reverse(str.begin(), str.end());
 }
 
-BinaryReader::BinaryReader(const std::filesystem::path& path) {
-    source = std::make_unique<FileSource>(path);
+BinaryReader::BinaryReader(const std::filesystem::path& path)
+: source(std::make_unique<FileSource>(path)) {
 }
 
-BinaryReader::BinaryReader(const std::string& path) {
-    source = std::make_unique<FileSource>(path);
+BinaryReader::BinaryReader(const std::string& path) : source(std::make_unique<FileSource>(path)) {
 }
 
-BinaryReader::BinaryReader(const char* path) {
-    source = std::make_unique<FileSource>(path);
+BinaryReader::BinaryReader(const char* path) : source(std::make_unique<FileSource>(path)) {
 }
 
-BinaryReader::BinaryReader(const char* data, int64_t data_size) {
-    source = std::make_unique<BufferSource>(data, data_size);
+BinaryReader::BinaryReader(const char* data, int64_t data_size)
+: source(std::make_unique<BufferSource>(data, data_size)) {
 }
 
-BinaryReader::BinaryReader(std::unique_ptr<char[]> data, int64_t data_size) {
-    source = std::make_unique<BufferSource>(std::move(data), data_size);
+BinaryReader::BinaryReader(std::unique_ptr<char[]> data, int64_t data_size)
+: source(std::make_unique<BufferSource>(std::move(data), data_size)) {
 }
 
 BinaryReader::BinaryReader(std::unique_ptr<ISource> source) : source(std::move(source)) {
