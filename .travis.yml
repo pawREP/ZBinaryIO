@@ -50,6 +50,7 @@ before_install:
   - sudo git clone https://github.com/linux-test-project/lcov.git
   - cd lcov && sudo make install
   - cd ..
+  - echo yes | cpan
   - sudo perl -MCPAN -e 'install PerlIO::gzip'
 
 after_success:
