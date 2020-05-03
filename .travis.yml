@@ -47,11 +47,14 @@ jobs:
     
 before_install:
   - eval "${MATRIX_EVAL}"
+  
+  #Setup lcov and dependencies
   - sudo git clone https://github.com/linux-test-project/lcov.git
   - cd lcov && sudo make install
   - cd ..
   - echo yes | cpan
   - sudo perl -MCPAN -e 'install PerlIO::gzip'
+  - sudo cpan JSON
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
