@@ -1,30 +1,28 @@
 #include "ZBinaryReader.hpp"
 #include "gtest/gtest.h"
 
-using namespace ZBinaryReader;
+using namespace ZBio;
+using namespace ZBio::ZBinaryReader;
 
 namespace {
-
-#define UNUSED(v) static_cast<void>(v)
-
-template <class Dst>
-Dst safeCharArrayCast(const char* src) noexcept {
-    static_assert(std::is_trivially_copyable_v<Dst>);
-
-    Dst dst;
-    std::memcpy(&dst, src, sizeof(Dst));
-    return dst;
-}
 
 struct TriviallyCopyableStruct {
     int a;
     int b;
 };
-
 static_assert(std::is_trivially_copyable<TriviallyCopyableStruct>::value);
 
-bool operator==(const TriviallyCopyableStruct& s0, const TriviallyCopyableStruct& s1) {
+inline bool operator==(const TriviallyCopyableStruct& s0, const TriviallyCopyableStruct& s1) {
     return (s0.a == s1.a) && (s0.b == s1.b);
+}
+
+template <class Dst>
+inline Dst safeCharArrayCast(const char* src) noexcept {
+    static_assert(std::is_trivially_copyable_v<Dst>);
+
+    Dst dst;
+    std::memcpy(&dst, src, sizeof(Dst));
+    return dst;
 }
 
 constexpr char testData[] = {
@@ -105,7 +103,7 @@ protected:
         std::memcpy(bytes, &testData[off], sizeof(ReadT));
         std::reverse(std::begin(bytes), std::end(bytes));
 
-        ASSERT_EQ((br->template read<ReadT, BinaryReader::Endianness::BE>()), safeCharArrayCast<ReadT>(bytes));
+        ASSERT_EQ((br->template read<ReadT, Endianness::BE>()), safeCharArrayCast<ReadT>(bytes));
         ASSERT_EQ(br->tell(), off + sizeof(ReadT));
     }
 
@@ -127,7 +125,7 @@ protected:
         const auto off = br->tell();
 
         ReadT arr[len];
-        br->read<ReadT, BinaryReader::Endianness::BE>(arr, len);
+        br->read<ReadT, Endianness::BE>(arr, len);
         for(int i = 0; i < len; ++i) {
             ReadT val = safeCharArrayCast<ReadT>(&testData[off + sizeof(ReadT) * i]);
             std::reverse(reinterpret_cast<char*>(&val), reinterpret_cast<char*>(&val) + sizeof(ReadT));
@@ -259,10 +257,9 @@ TYPED_TEST(BinaryReaderTestFixture, ReadStrings) {
     this->br->seek(stringsOffset);
 
     ASSERT_STREQ(this->br->template readString<testStrLen>().c_str(), "Test");
-    ASSERT_STREQ((this->br->template readString<4, BinaryReader::Endianness::LE>().c_str()),
-                 "Test");
+    ASSERT_STREQ((this->br->template readString<4, Endianness::LE>().c_str()), "Test");
     ASSERT_STREQ(this->br->readCString().c_str(), "Test");
-    ASSERT_STREQ(this->br->template readCString<BinaryReader::Endianness::LE>().c_str(), "Test");
+    ASSERT_STREQ(this->br->template readCString<Endianness::LE>().c_str(), "Test");
 
     this->br->seek(stringsOffset);
     ASSERT_STREQ(this->br->readString(testStrLen).c_str(), "Test");

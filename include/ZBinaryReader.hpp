@@ -1,3 +1,7 @@
+#pragma once
+
+#include "Common.h"
+
 #include <algorithm>
 #include <assert.h>
 #include <cstdint>
@@ -5,10 +9,13 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <optional>
 #include <vector>
 
 // Check if system is little endian
 static_assert(static_cast<const uint8_t&>(0x0B00B135) == 0x35);
+
+namespace ZBio {
 
 namespace ZBinaryReader {
 
@@ -86,8 +93,6 @@ class BinaryReader {
     std::unique_ptr<ISource> source;
 
 public:
-    enum class Endianness { LE, BE };
-
     BinaryReader(BinaryReader& br) = delete;
     BinaryReader(BinaryReader&& br) = delete;
 
@@ -144,13 +149,13 @@ public:
     [[nodiscard]] const ISource* getSource() const noexcept;
 };
 
-FileSource::FileSource(const std::string& path) : FileSource(std::filesystem::path(path)) {
+inline FileSource::FileSource(const std::string& path) : FileSource(std::filesystem::path(path)) {
 }
 
-FileSource::FileSource(const char* path) : FileSource(std::filesystem::path(path)) {
+inline FileSource::FileSource(const char* path) : FileSource(std::filesystem::path(path)) {
 }
 
-FileSource::FileSource(const std::filesystem::path& path) : size_(0) {
+inline FileSource::FileSource(const std::filesystem::path& path) : size_(0) {
     if(!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path))
         throw std::runtime_error("Invalid path: " + path.generic_string());
 
@@ -162,18 +167,18 @@ FileSource::FileSource(const std::filesystem::path& path) : size_(0) {
         throw std::runtime_error("Failed to open file");
 }
 
-FileSource::~FileSource() {
+inline FileSource::~FileSource() {
     if(ifs.is_open())
         ifs.close();
 }
 
-void FileSource::read(char* dst, int64_t len) {
+inline void FileSource::read(char* dst, int64_t len) {
     ifs.read(dst, len);
     if(ifs.bad())
         throw std::runtime_error("Read fail");
 }
 
-void FileSource::peek(char* dst, int64_t len) const {
+inline void FileSource::peek(char* dst, int64_t len) const {
     auto o = tell();
     ifs.read(dst, len);
     ifs.seekg(o, std::ios::beg);
@@ -181,109 +186,90 @@ void FileSource::peek(char* dst, int64_t len) const {
         throw std::runtime_error("Peek fail");
 }
 
-void FileSource::seek(int64_t offset) {
+inline void FileSource::seek(int64_t offset) {
     ifs.seekg(offset, std::ios::beg);
 }
 
-int64_t FileSource::tell() const noexcept {
+inline int64_t FileSource::tell() const noexcept {
     return ifs.tellg();
 }
 
-int64_t FileSource::size() const noexcept {
+inline int64_t FileSource::size() const noexcept {
     return size_;
 }
 
 // Non owning constructor
-BufferSource::BufferSource(const char* data, int64_t data_size)
+inline BufferSource::BufferSource(const char* data, int64_t data_size)
 : ownedBuffer(nullptr), buffer(data), bufferSize(data_size), cur(0) {
 }
 
 // Owning constructor
-BufferSource::BufferSource(std::unique_ptr<char[]> data, int64_t data_size)
+inline BufferSource::BufferSource(std::unique_ptr<char[]> data, int64_t data_size)
 : ownedBuffer(std::move(data)), buffer(nullptr), bufferSize(data_size), cur(0) {
     buffer = ownedBuffer.get();
 }
 
-void BufferSource::read(char* dst, int64_t len) {
+inline void BufferSource::read(char* dst, int64_t len) {
     if(cur + len > bufferSize)
         throw std::runtime_error("Out of bounds read");
     memcpy(dst, &(buffer[cur]), static_cast<size_t>(len));
     cur += len;
 }
 
-void BufferSource::peek(char* dst, int64_t len) const {
+inline void BufferSource::peek(char* dst, int64_t len) const {
     if(cur + len > bufferSize)
         throw std::runtime_error("Out of bounds read");
     memcpy(dst, &(buffer[cur]), len);
 }
 
-void BufferSource::seek(int64_t offset) {
+inline void BufferSource::seek(int64_t offset) {
     cur = offset; // Seeking to OOB is not an error
 }
 
-int64_t BufferSource::tell() const noexcept {
+inline int64_t BufferSource::tell() const noexcept {
     return cur;
 }
 
-int64_t BufferSource::size() const noexcept {
+inline int64_t BufferSource::size() const noexcept {
     return bufferSize;
 }
 
-void reverseEndianness(char* data, size_t size) {
-    std::reverse(data, data + size);
-}
-
-template <size_t TypeSize>
-void reverseEndianness(char* data) {
-    std::reverse(data, data + TypeSize);
-}
-
-template <typename T>
-void reverseEndianness(T& t) {
-    static_assert(std::is_fundamental_v<T>);
-    std::reverse(reinterpret_cast<char*>(&t), reinterpret_cast<char*>(&t) + sizeof(T));
-}
-
-template <>
-void reverseEndianness<std::string>(std::string& str) {
-    std::reverse(str.begin(), str.end());
-}
-
-BinaryReader::BinaryReader(const std::filesystem::path& path)
+inline BinaryReader::BinaryReader(const std::filesystem::path& path)
 : source(std::make_unique<FileSource>(path)) {
 }
 
-BinaryReader::BinaryReader(const std::string& path) : source(std::make_unique<FileSource>(path)) {
+inline BinaryReader::BinaryReader(const std::string& path)
+: source(std::make_unique<FileSource>(path)) {
 }
 
-BinaryReader::BinaryReader(const char* path) : source(std::make_unique<FileSource>(path)) {
+inline BinaryReader::BinaryReader(const char* path) : source(std::make_unique<FileSource>(path)) {
 }
 
-BinaryReader::BinaryReader(const char* data, int64_t data_size)
+inline BinaryReader::BinaryReader(const char* data, int64_t data_size)
 : source(std::make_unique<BufferSource>(data, data_size)) {
 }
 
-BinaryReader::BinaryReader(std::unique_ptr<char[]> data, int64_t data_size)
+inline BinaryReader::BinaryReader(std::unique_ptr<char[]> data, int64_t data_size)
 : source(std::make_unique<BufferSource>(std::move(data), data_size)) {
 }
 
-BinaryReader::BinaryReader(std::unique_ptr<ISource> source) : source(std::move(source)) {
+inline BinaryReader::BinaryReader(std::unique_ptr<ISource> source) : source(std::move(source)) {
 }
 
-int64_t BinaryReader::tell() const noexcept {
+inline int64_t BinaryReader::tell() const noexcept {
     return source->tell();
 }
 
-void BinaryReader::seek(int64_t pos) {
+inline void BinaryReader::seek(int64_t pos) {
     source->seek(pos);
 }
 
-int64_t BinaryReader::size() const noexcept {
+inline int64_t BinaryReader::size() const noexcept {
     return source->size();
 }
 
-template <typename T, BinaryReader::Endianness en>
-void BinaryReader::read(T* arr, int64_t len) {
+template <typename T, Endianness en>
+inline void BinaryReader::read(T* arr, int64_t len) {
     source->read(reinterpret_cast<char*>(arr), sizeof(T) * len);
     if constexpr((en == Endianness::BE) && (sizeof(T) > sizeof(char))) {
         for(int i = 0; i < len; ++i)
@@ -291,8 +277,8 @@ void BinaryReader::read(T* arr, int64_t len) {
     }
 }
 
-template <typename T, BinaryReader::Endianness en>
-void BinaryReader::peek(T* arr, int64_t len) const {
+template <typename T, Endianness en>
+inline void BinaryReader::peek(T* arr, int64_t len) const {
     source->peek(reinterpret_cast<char*>(arr), sizeof(T) * len);
     if constexpr((en == Endianness::BE) && (sizeof(T) > sizeof(char))) {
         for(int i = 0; i < len; ++i)
@@ -300,11 +286,11 @@ void BinaryReader::peek(T* arr, int64_t len) const {
     }
 }
 
-template <typename T, BinaryReader::Endianness en>
-T BinaryReader::read() {
+template <typename T, Endianness en>
+inline T BinaryReader::read() {
     static_assert(std::is_trivially_copyable_v<T>);
 
-    if constexpr(en == BinaryReader::Endianness::BE)
+    if constexpr(en == Endianness::BE)
         static_assert(std::is_fundamental_v<T>);
 
     T value;
@@ -313,18 +299,18 @@ T BinaryReader::read() {
 }
 
 template <typename T>
-void BinaryReader::sink(int64_t len) {
+inline void BinaryReader::sink(int64_t len) {
     for(int i = 0; i < len; ++i)
         static_cast<void>(read<T>());
 }
 
 template <typename T>
-void BinaryReader::sink() {
+inline void BinaryReader::sink() {
     static_cast<void>(read<T>());
 }
 
-template <typename T, BinaryReader::Endianness en>
-T BinaryReader::peek() const {
+template <typename T, Endianness en>
+inline T BinaryReader::peek() const {
     static_assert(std::is_trivially_copyable_v<T>);
 
     T value;
@@ -332,8 +318,8 @@ T BinaryReader::peek() const {
     return value;
 }
 
-template <unsigned int len, BinaryReader::Endianness en>
-std::string BinaryReader::readString() {
+template <unsigned int len, Endianness en>
+inline std::string BinaryReader::readString() {
     std::string str(len, '\0');
     read(str.data(), len);
     if constexpr(en == Endianness::LE)
@@ -345,8 +331,8 @@ std::string BinaryReader::readString() {
     return str;
 }
 
-template <BinaryReader::Endianness en>
-std::string BinaryReader::readString(size_t charCount) {
+template <Endianness en>
+inline std::string BinaryReader::readString(size_t charCount) {
     std::string str(charCount, '\0');
     read(str.data(), charCount);
     if constexpr(en == Endianness::LE)
@@ -354,8 +340,8 @@ std::string BinaryReader::readString(size_t charCount) {
     return str;
 }
 
-template <BinaryReader::Endianness en>
-std::string BinaryReader::readCString() {
+template <Endianness en>
+inline std::string BinaryReader::readCString() {
     std::vector<char> readBuffer;
 
     char c = '\0';
@@ -373,7 +359,7 @@ std::string BinaryReader::readCString() {
 }
 
 template <unsigned int alignment>
-void BinaryReader::align() {
+inline void BinaryReader::align() {
     char zero[alignment];
     uint64_t pos = tell();
     uint64_t padding_len = (alignment - pos) % alignment;
@@ -381,7 +367,7 @@ void BinaryReader::align() {
 }
 
 template <unsigned int alignment>
-void BinaryReader::alignZeroPad() {
+inline void BinaryReader::alignZeroPad() {
     char zero[alignment];
     uint64_t pos = tell();
     uint64_t padding_len = (alignment - pos) % alignment;
@@ -393,19 +379,19 @@ void BinaryReader::alignZeroPad() {
         throw std::runtime_error("Non zero padding encountered");
 }
 
-const ISource* BinaryReader::getSource() const noexcept {
+inline const ISource* BinaryReader::getSource() const noexcept {
     return source.get();
 }
 
 template <typename Source>
 template <typename... Args>
-CoverageTrackingSource<Source>::CoverageTrackingSource(Args&&... args)
+inline CoverageTrackingSource<Source>::CoverageTrackingSource(Args&&... args)
 : Source(std::forward<Args>(args)...) {
     accessPattern.resize(Source::size(), 0);
 }
 
 template <typename Source>
-void CoverageTrackingSource<Source>::read(char* dst, int64_t len) {
+inline void CoverageTrackingSource<Source>::read(char* dst, int64_t len) {
     auto cur = Source::tell();
     Source::read(dst, len);
     for(auto i = cur; i < cur + len; ++i) {
@@ -415,7 +401,7 @@ void CoverageTrackingSource<Source>::read(char* dst, int64_t len) {
 }
 
 template <typename Source>
-bool CoverageTrackingSource<Source>::completeCoverage(const BinaryReader* br) {
+inline bool CoverageTrackingSource<Source>::completeCoverage(const BinaryReader* br) {
     auto coverageReader = dynamic_cast<const CoverageTrackingSource<Source>*>(br->getSource());
     if(!coverageReader)
         throw std::bad_cast();
@@ -423,7 +409,7 @@ bool CoverageTrackingSource<Source>::completeCoverage(const BinaryReader* br) {
 }
 
 template <typename Source>
-bool CoverageTrackingSource<Source>::completeCoverageInternal() const {
+inline bool CoverageTrackingSource<Source>::completeCoverageInternal() const {
     auto it = std::find(accessPattern.begin(), accessPattern.end(), 0);
     if(it == accessPattern.end())
         return true;
@@ -431,3 +417,5 @@ bool CoverageTrackingSource<Source>::completeCoverageInternal() const {
 }
 
 } // namespace ZBinaryReader
+
+}; // namespace ZBio
