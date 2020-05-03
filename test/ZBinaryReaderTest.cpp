@@ -382,14 +382,12 @@ protected:
 };
 
 TEST_F(CoverageTrackingSourceTestFixture, CompleteCoverage) {
-    char sink[sizeof(testData)];
-    br->read(sink, sizeof(sink));
+    br->sink<char>(sizeof(testData));
     ASSERT_TRUE(CoverageTrackingSource<BufferSource>::completeCoverage(br.get()));
 }
 
 TEST_F(CoverageTrackingSourceTestFixture, IncompleteCoverage) {
-    char sink[sizeof(testData) - 1];
-    br->read(sink, sizeof(sink));
+    br->sink<char>(sizeof(testData) - 1);
     ASSERT_FALSE(CoverageTrackingSource<BufferSource>::completeCoverage(br.get()));
 }
 
