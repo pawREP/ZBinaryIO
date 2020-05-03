@@ -314,13 +314,13 @@ TYPED_TEST(BinaryReaderTestFixture, Peek) {
     // Peek fundamental type
     using FT = int;
     const auto begin = this->br->tell();
-    this->br->template peek<FT>();
+    UNUSED(this->br->template peek<FT>());
     ASSERT_EQ(this->br->tell(), begin);
 
     // Peek compound type
     using CT = TriviallyCopyableStruct;
     this->br->seek(begin);
-    this->br->template peek<CT>();
+    UNUSED(this->br->template peek<CT>());
     ASSERT_EQ(this->br->tell(), begin);
 
     // Peek fundamental type array
