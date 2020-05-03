@@ -50,6 +50,7 @@ before_install:
   - sudo git clone https://github.com/linux-test-project/lcov.git
   - cd lcov && sudo make install
   - cd ..
+  - sudo cpan PerlIO::gzip
 
 after_success:
   - cd ${TRAVIS_BUILD_DIR}
