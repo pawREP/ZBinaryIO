@@ -290,7 +290,7 @@ TYPED_TEST(BinaryReaderTestFixture, ReadCopyableType) {
 
 TYPED_TEST(BinaryReaderTestFixture, Sink) {
     // Sink fundamental type
-    using FT = int; 
+    using FT = int;
     const auto begin = this->br->tell();
     this->br->template sink<FT>();
     ASSERT_EQ(this->br->tell(), begin + sizeof(FT));
@@ -306,6 +306,30 @@ TYPED_TEST(BinaryReaderTestFixture, Sink) {
     this->br->seek(begin);
     this->br->template sink<FT>(arrLen);
     ASSERT_EQ(this->br->tell(), begin + arrLen * sizeof(FT));
+}
+
+TYPED_TEST(BinaryReaderTestFixture, Peek) {
+    // Return value of peek is not checked as it's implicitly checked as part of br->read testing.
+
+    // Peek fundamental type
+    using FT = int;
+    const auto begin = this->br->tell();
+    this->br->template peek<FT>();
+    ASSERT_EQ(this->br->tell(), begin);
+
+    // Peek compound type
+    using CT = TriviallyCopyableStruct;
+    this->br->seek(begin);
+    this->br->template peek<CT>();
+    ASSERT_EQ(this->br->tell(), begin);
+
+    // Peek fundamental type array
+    constexpr int arrLen = 4;
+    FT arr[arrLen]{};
+
+    this->br->seek(begin);
+    this->br->peek(arr, arrLen);
+    ASSERT_EQ(this->br->tell(), begin);
 }
 
 
