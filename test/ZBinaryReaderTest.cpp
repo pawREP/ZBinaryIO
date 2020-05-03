@@ -5,6 +5,8 @@ using namespace ZBinaryReader;
 
 namespace {
 
+#define UNUSED(v) static_cast<void>(v)
+
 template <class Dst>
 Dst safeCharArrayCast(const char* src) noexcept {
     static_assert(std::is_trivially_copyable_v<Dst>);
@@ -263,17 +265,17 @@ TYPED_TEST(BinaryReaderTestFixture, ReadStrings) {
 // Try to read fixed size string which contains null chars
 TYPED_TEST(BinaryReaderTestFixture, ReadInvalidString) {
     this->br->seek(0x20);
-    ASSERT_THROW(this->br->template readString<0x0A>(), std::runtime_error);
+    ASSERT_THROW(UNUSED(this->br->template readString<0x0A>()), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadStringPastEnd) {
     this->br->seek(0x3E);
-    ASSERT_THROW(this->br->template readString<0x10>(), std::runtime_error);
+    ASSERT_THROW(UNUSED(this->br->template readString<0x10>()), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadCStringPastEnd) {
     this->br->seek(0x3E);
-    ASSERT_THROW(this->br->readCString(), std::runtime_error);
+    ASSERT_THROW(UNUSED(this->br->readCString()), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadCopyableType) {
@@ -366,16 +368,16 @@ TEST_F(CoverageTrackingSourceTestFixture, IncompleteCoverage) {
 
 TEST_F(CoverageTrackingSourceTestFixture, DoubleRead) {
     using T = int;
-    br->read<T>();
+    UNUSED(br->read<T>());
     br->seek(br->tell() - sizeof(T));
-    ASSERT_THROW(br->read<T>(), std::runtime_error);
+    ASSERT_THROW(UNUSED(br->read<T>()), std::runtime_error);
 }
 
 TEST_F(CoverageTrackingSourceTestFixture, DoublePeek) {
     using T = int;
-    br->peek<T>();
+    UNUSED(br->peek<T>());
     br->seek(br->tell() - sizeof(T));
-    br->peek<T>();
+    UNUSED(br->peek<T>());
 }
 
 } // namespace
