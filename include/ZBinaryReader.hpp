@@ -112,7 +112,7 @@ public:
     void read(T* arr, int64_t len);
 
     template <typename T, Endianness en = Endianness::LE>
-    T read();
+    [[nodiscard]] T read();
 
     template <typename T>
     void sink(int64_t len);
@@ -124,16 +124,16 @@ public:
     void peek(T* arr, int64_t len) const;
 
     template <typename T, Endianness en = Endianness::LE>
-    T peek() const;
+    [[nodiscard]] T peek() const;
 
     template <unsigned int len, Endianness en = Endianness::BE>
-    std::string readString();
+    [[nodiscard]] std::string readString();
 
     template <Endianness en = Endianness::BE>
-    std::string readString(size_t charCount);
+    [[nodiscard]] std::string readString(size_t charCount);
 
     template <Endianness en = Endianness::BE>
-    std::string readCString();
+    [[nodiscard]] std::string readCString();
 
     template <unsigned int alignment = 0x10>
     void align();
