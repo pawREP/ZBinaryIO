@@ -7,7 +7,7 @@ ZBinaryReader is a modern, single header, cross-platform C++17 binary reader lib
 
 The library provides a reader interface for file and buffer data sources. Additional data sources can supported through classes that implement the `ISource` interface. Existing sources can also be extended using the mixin pattern. See `CoverageTrackingSource` for an example of such an extension. 
 
-ZBinaryReader is continuesly compiled and tested on:
+ZBinaryReader is continuously compiled and tested on:
  - gcc 9.3.0
  - clang 9.0.0
  - MSVC 2019 ver. 16.5 (1925) 
