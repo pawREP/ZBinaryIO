@@ -94,20 +94,19 @@ class BinaryReader {
 
 public:
     BinaryReader(BinaryReader& br) = delete;
-    BinaryReader(BinaryReader&& br) = delete;
+    BinaryReader(BinaryReader&& br) noexcept;
 
-    // File Source constructors
     explicit BinaryReader(const std::filesystem::path& path);
     explicit BinaryReader(const std::string& path);
     explicit BinaryReader(const char* path);
 
-    // Buffer Source constructors
     BinaryReader(const char* data, int64_t data_size);
     BinaryReader(std::unique_ptr<char[]> data, int64_t data_size);
+
     explicit BinaryReader(std::unique_ptr<ISource> source);
 
     BinaryReader& operator=(const BinaryReader& br) = delete;
-    BinaryReader& operator=(BinaryReader&& br) = delete;
+    BinaryReader& operator=(BinaryReader&& br) noexcept;
 
     [[nodiscard]] int64_t tell() const noexcept;
     void seek(int64_t pos);
@@ -234,6 +233,9 @@ inline int64_t BufferSource::size() const noexcept {
     return bufferSize;
 }
 
+inline BinaryReader::BinaryReader(BinaryReader&& other) noexcept : source(std::move(other.source)) {
+}
+
 inline BinaryReader::BinaryReader(const std::filesystem::path& path)
 : source(std::make_unique<FileSource>(path)) {
 }
@@ -254,6 +256,10 @@ inline BinaryReader::BinaryReader(std::unique_ptr<char[]> data, int64_t data_siz
 }
 
 inline BinaryReader::BinaryReader(std::unique_ptr<ISource> source) : source(std::move(source)) {
+}
+
+inline BinaryReader& BinaryReader::operator=(BinaryReader&& other) noexcept {
+    return BinaryReader(std::move(other.source));
 }
 
 inline int64_t BinaryReader::tell() const noexcept {
