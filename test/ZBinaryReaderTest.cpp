@@ -268,17 +268,17 @@ TYPED_TEST(BinaryReaderTestFixture, ReadStrings) {
 // Try to read fixed size string which contains null chars
 TYPED_TEST(BinaryReaderTestFixture, ReadInvalidString) {
     this->br->seek(0x20);
-    ASSERT_THROW(UNUSED(this->br->template readString<0x0A>()), std::runtime_error);
+    ASSERT_THROW(ZBIO_UNUSED(this->br->template readString<0x0A>()), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadStringPastEnd) {
     this->br->seek(0x3E);
-    ASSERT_THROW(UNUSED(this->br->template readString<0x10>()), std::runtime_error);
+    ASSERT_THROW(ZBIO_UNUSED(this->br->template readString<0x10>()), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadCStringPastEnd) {
     this->br->seek(0x3E);
-    ASSERT_THROW(UNUSED(this->br->readCString()), std::runtime_error);
+    ASSERT_THROW(ZBIO_UNUSED(this->br->readCString()), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadCopyableType) {
@@ -305,28 +305,46 @@ TYPED_TEST(BinaryReaderTestFixture, Sink) {
     ASSERT_EQ(this->br->tell(), begin + arrLen * sizeof(FT));
 }
 
-TYPED_TEST(BinaryReaderTestFixture, Peek) {
-    // Return value of peek is not checked as it's implicitly checked as part of br->read testing.
-
-    // Peek fundamental type
+TYPED_TEST(BinaryReaderTestFixture, PeekFundamental) {
     using FT = int;
-    const auto begin = this->br->tell();
-    UNUSED(this->br->template peek<FT>());
-    ASSERT_EQ(this->br->tell(), begin);
 
-    // Peek compound type
+    const auto soll = this->br->template peek<FT>();
+    ASSERT_EQ(this->br->tell(), 0);
+    ASSERT_EQ(this->br->template read<FT>(), soll);
+}
+
+TYPED_TEST(BinaryReaderTestFixture, PeekCompound) {
     using CT = TriviallyCopyableStruct;
-    this->br->seek(begin);
-    UNUSED(this->br->template peek<CT>());
-    ASSERT_EQ(this->br->tell(), begin);
+    this->br->seek(0);
+    const auto soll = this->br->template peek<CT>();
+    ASSERT_EQ(this->br->tell(), 0);
+    ASSERT_EQ(this->br->template read<CT>(), soll);
+}
 
-    // Peek fundamental type array
+TYPED_TEST(BinaryReaderTestFixture, PeekFundamentalTArray) {
+    using FT = int;
     constexpr int arrLen = 4;
-    FT arr[arrLen]{};
 
-    this->br->seek(begin);
-    this->br->peek(arr, arrLen);
-    ASSERT_EQ(this->br->tell(), begin);
+    FT soll[arrLen]{};
+    this->br->peek(soll, arrLen);
+    ASSERT_EQ(this->br->tell(), 0);
+
+    FT is[arrLen]{};
+    this->br->read(is, arrLen);
+    ASSERT_FALSE(memcmp(soll, is, sizeof(soll)));
+}
+
+TYPED_TEST(BinaryReaderTestFixture, PeekFundamentalTArrayBE) {
+    using FT = int;
+    constexpr int arrLen = 4;
+
+    FT soll[arrLen]{};
+    this->br->peek<FT, Endianness::BE>(soll, arrLen);
+    ASSERT_EQ(this->br->tell(), 0);
+
+    FT is[arrLen]{};
+    this->br->read<FT, Endianness::BE>(is, arrLen);
+    ASSERT_FALSE(memcmp(soll, is, sizeof(soll)));
 }
 
 
@@ -388,8 +406,94 @@ TYPED_TEST(BinaryReaderTestFixture, AlignmentZeroPadBadPadding) {
     ASSERT_THROW(this->br->alignZeroPad(), std::runtime_error);
 }
 
+// Throw if padding contains non-zero values.
+TYPED_TEST(BinaryReaderTestFixture, GetSource) {
+    auto source = this->br->getSource();
+    ASSERT_TRUE(source);
+}
+
 #endif // GTEST_HAS_TYPED_TEST
 
+class BinaryReaderSpecialMemberFunctions : public testing::Test {
+
+protected:
+    std::filesystem::path tmpFile;
+
+    void SetUp() override {
+        this->tmpFile =
+        std::filesystem::temp_directory_path() / "BinaryReaderSpecialMemberFunctionsTmpFile.bin";
+        
+        std::ofstream ofs(tmpFile, std::ios::binary);
+        if(!ofs.is_open())
+            throw;
+        ofs << 0;
+        ofs.close();
+    }
+
+    void TearDown() override {
+        if(std::filesystem::exists(tmpFile))
+            std::filesystem::remove(tmpFile);
+    }
+};
+
+TEST_F(BinaryReaderSpecialMemberFunctions, CharCtor) {
+    BinaryReader br(tmpFile.generic_string().c_str());
+    br.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, StringCtor) {
+    BinaryReader br(tmpFile.generic_string());
+    br.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, PathCtor) {
+    BinaryReader br(tmpFile);
+    br.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, BufferCtor) {
+    constexpr int bufSize = 4;
+    const char buf[bufSize]{};
+
+    BinaryReader br(buf, bufSize);
+    br.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, NonOwningBufferCtor) {
+    constexpr int bufSize = 4;
+    const char buf[bufSize]{};
+
+    BinaryReader br(buf, bufSize);
+    br.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, OwningBufferCtor) {
+    constexpr int bufSize = 4;
+    auto buf = std::make_unique<char[]>(bufSize);
+
+    BinaryReader br(std::move(buf), bufSize);
+    br.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, MoveCtor) {
+    BinaryReader br0(tmpFile);
+    BinaryReader br1(std::move(br0));
+
+    br1.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, FromSourceCtor) {
+    std::unique_ptr<ISource> source = std::make_unique<FileSource>(tmpFile);
+    BinaryReader br0(std::move(source));
+    br0.tell();
+}
+
+TEST_F(BinaryReaderSpecialMemberFunctions, MoveAssign) {
+    BinaryReader br0(tmpFile);
+    BinaryReader br1(tmpFile);
+    br1 = std::move(br0);
+    br1.tell();
+}
 
 class CoverageTrackingSourceTestFixture : public testing::Test {
 protected:
@@ -414,16 +518,16 @@ TEST_F(CoverageTrackingSourceTestFixture, IncompleteCoverage) {
 
 TEST_F(CoverageTrackingSourceTestFixture, DoubleRead) {
     using T = int;
-    UNUSED(br->read<T>());
+    ZBIO_UNUSED(br->read<T>());
     br->seek(br->tell() - sizeof(T));
-    ASSERT_THROW(UNUSED(br->read<T>()), std::runtime_error);
+    ASSERT_THROW(ZBIO_UNUSED(br->read<T>()), std::runtime_error);
 }
 
 TEST_F(CoverageTrackingSourceTestFixture, DoublePeek) {
     using T = int;
-    UNUSED(br->peek<T>());
+    ZBIO_UNUSED(br->peek<T>());
     br->seek(br->tell() - sizeof(T));
-    UNUSED(br->peek<T>());
+    ZBIO_UNUSED(br->peek<T>());
 }
 
 } // namespace
