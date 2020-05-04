@@ -21,9 +21,14 @@ namespace ZBinaryWriter {
 
 class ISink {
 public:
+    //Write 'len' bytes from 'buf' to the sink destination.
     virtual void write(const char* buf, int len) = 0;
+    // Move the current write head to 'offset'. 
+    // Seeking past the end of a sink extends the size of the sink with a null byte padding.
     virtual void seek(int64_t offset) = 0;
+    //Return the current write head position.
     virtual int64_t tell() const = 0;
+    //Release/Close the sink destination and optionally return the written data. 
     virtual std::optional<std::vector<char>> release() = 0;
 
     virtual ~ISink();
