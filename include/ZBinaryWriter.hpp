@@ -134,7 +134,17 @@ inline void FileSink::write(const char* read_buffer, int len) {
 }
 
 inline void FileSink::seek(int64_t offset) {
-    ofs.seekp(offset, std::ios::beg);
+    // seekp doesn't pad the file to the seek destination, we have to do it manually
+    ofs.seekp(0, std::ios::end);
+    const auto end = ofs.tellp();
+    if(offset > end) {
+        const char pad = 0;
+        int64_t delta = offset - end;
+        while(delta--)
+            ofs.write(&pad, 1);
+    } else {
+        ofs.seekp(offset);
+    }
 }
 
 inline int64_t FileSink::tell() const {
