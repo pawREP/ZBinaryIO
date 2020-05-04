@@ -21,14 +21,14 @@ namespace ZBinaryWriter {
 
 class ISink {
 public:
-    //Write 'len' bytes from 'buf' to the sink destination.
+    // Write 'len' bytes from 'buf' to the sink destination.
     virtual void write(const char* buf, int len) = 0;
-    // Move the current write head to 'offset'. 
+    // Move the current write head to 'offset'.
     // Seeking past the end of a sink extends the size of the sink with a null byte padding.
     virtual void seek(int64_t offset) = 0;
-    //Return the current write head position.
+    // Return the current write head position.
     virtual int64_t tell() const = 0;
-    //Release/Close the sink destination and optionally return the written data. 
+    // Release/Close the sink destination and optionally return the written data.
     virtual std::optional<std::vector<char>> release() = 0;
 
     virtual ~ISink();
@@ -72,6 +72,9 @@ private:
     std::unique_ptr<ISink> sink;
 
 public:
+    explicit BinaryWriter(const BinaryWriter& bw) = delete;
+    explicit BinaryWriter(BinaryWriter&& bw) noexcept;
+
     // File Writer Constructor
     explicit BinaryWriter(const char* path);
     explicit BinaryWriter(const std::string& path);
@@ -82,6 +85,9 @@ public:
 
     // Custom Sink Constructor
     explicit BinaryWriter(std::unique_ptr<ISink> sink);
+
+    BinaryWriter& operator=(const BinaryWriter& bw) = delete;
+    BinaryWriter& operator=(BinaryWriter&& bw) noexcept;
 
     template <typename T, Endianness en = Endianness::LE>
     void write(const T& value);
@@ -194,6 +200,9 @@ inline std::optional<std::vector<char>> BufferSink::release() {
 // BufferSink Impl End
 
 // ZBinaryReader Impl
+inline BinaryWriter::BinaryWriter(BinaryWriter&& other) noexcept : sink(std::move(other.sink)){
+}
+
 inline BinaryWriter::BinaryWriter(const char* path) : BinaryWriter(std::filesystem::path(path)) {
 }
 
@@ -205,12 +214,15 @@ inline BinaryWriter::BinaryWriter(const std::filesystem::path& path)
 : sink(std::make_unique<FileSink>(path)) {
 }
 
-// Buffer Writer Constructor
 inline BinaryWriter::BinaryWriter() : sink(std::make_unique<BufferSink>()) {
 }
 
-// Custom Sink Constructor
 inline BinaryWriter::BinaryWriter(std::unique_ptr<ISink> sink) : sink(std::move(sink)) {
+}
+
+inline BinaryWriter& BinaryWriter::operator=(BinaryWriter&& other) noexcept {
+    sink = std::move(other.sink);
+    return *this;
 }
 
 template <typename T, Endianness en>
