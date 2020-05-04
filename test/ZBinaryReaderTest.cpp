@@ -451,6 +451,10 @@ TEST_F(BinaryReaderSpecialMemberFunctions, PathCtor) {
     ZBIO_UNUSED(br.tell());
 }
 
+TEST_F(BinaryReaderSpecialMemberFunctions, PathCtorInvalidFile) {
+    ASSERT_THROW(BinaryReader(tmpFile / "bad"), std::exception);
+}
+
 TEST_F(BinaryReaderSpecialMemberFunctions, BufferCtor) {
     constexpr int bufSize = 4;
     const char buf[bufSize]{};
