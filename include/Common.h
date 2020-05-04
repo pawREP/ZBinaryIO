@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <type_traits>
 
-#define UNUSED(v) static_cast<void>(v)
+#define ZBIO_UNUSED(v) static_cast<void>(v)
 
 namespace ZBio {
 
