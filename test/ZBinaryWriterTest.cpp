@@ -32,18 +32,18 @@ private:
 
 protected:
     void SetUp() override {
-        this->tmpFile = std::filesystem::temp_directory_path() / "ZBinaryWriterTmpFile.bin";
+        this->tmpFile = std::filesystem::temp_directory_path() / "BinaryWriterTmpFile.bin";
         if constexpr(std::is_same_v<Source, BufferSink>) {
-            this->br = std::make_unique<BinaryWriter>();
+            this->bw = std::make_unique<BinaryWriter>();
         } else if constexpr(std::is_same_v<Source, FileSink>)
-            this->br = std::make_unique<BinaryWriter>(this->tmpFile);
+            this->bw = std::make_unique<BinaryWriter>(this->tmpFile);
         else
             throw; // unreachable;
     }
 
     void TearDown() override {
         if constexpr(std::is_same_v<Source, FileSink>) {
-            this->br->release();
+            this->bw->release();
             if(std::filesystem::exists(this->tmpFile))
                 std::filesystem::remove(this->tmpFile);
         }
@@ -52,7 +52,7 @@ protected:
     bool validate(const std::vector<char>& soll) {
         std::vector<char> is;
         if constexpr(std::is_same_v<Source, FileSink>) {
-            this->br->release();
+            EXPECT_FALSE(this->bw->release().has_value());
 
             const auto fileSize = std::filesystem::file_size(this->tmpFile);
             is.resize(fileSize);
@@ -62,15 +62,14 @@ protected:
 
             ifs.close();
         } else if constexpr(std::is_same_v<Source, BufferSink>) {
-            is = this->br->release().value();
+            is = this->bw->release().value();
         } else
             throw;
 
         return vectorEq(is, soll);
     }
 
-
-    std::unique_ptr<BinaryWriter> br;
+    std::unique_ptr<BinaryWriter> bw;
 };
 
 #if GTEST_HAS_TYPED_TEST
@@ -88,27 +87,27 @@ TYPED_TEST(BinaryWriterTest, SeekTell) {
     constexpr int offset3 = 0x05;
 
     // test tell on construction
-    ASSERT_EQ(this->br->tell(), 0);
+    ASSERT_EQ(this->bw->tell(), 0);
 
     // seek forward
-    this->br->seek(offset0);
-    ASSERT_EQ(this->br->tell(), offset0);
+    this->bw->seek(offset0);
+    ASSERT_EQ(this->bw->tell(), offset0);
 
     // seek backwards
-    this->br->seek(offset1);
-    ASSERT_EQ(this->br->tell(), offset1);
+    this->bw->seek(offset1);
+    ASSERT_EQ(this->bw->tell(), offset1);
 
     // seek to end - 1
-    this->br->seek(offset3);
-    ASSERT_EQ(this->br->tell(), offset3);
+    this->bw->seek(offset3);
+    ASSERT_EQ(this->bw->tell(), offset3);
 
     // seek to end
-    this->br->seek(offset0);
-    ASSERT_EQ(this->br->tell(), offset0);
+    this->bw->seek(offset0);
+    ASSERT_EQ(this->bw->tell(), offset0);
 
     // seek to end + 1
-    this->br->seek(offset2);
-    ASSERT_EQ(this->br->tell(), offset2);
+    this->bw->seek(offset2);
+    ASSERT_EQ(this->bw->tell(), offset2);
 
     // TODO: Seek negative
 
@@ -116,14 +115,14 @@ TYPED_TEST(BinaryWriterTest, SeekTell) {
 }
 
 TYPED_TEST(BinaryWriterTest, WriteTrivial) {
-    this->br->write(0x11223344);
-    this->br->template write<char>(0x66);
+    this->bw->write(0x11223344);
+    this->bw->template write<char>(0x66);
     ASSERT_TRUE(this->validate(std::vector<char>{ 0x44, 0x33, 0x22, 0x11, 0x66 }));
 }
 
 TYPED_TEST(BinaryWriterTest, WriteTrivialBE) {
-    this->br->template write<int, Endianness::BE>(0x11223344);
-    this->br->template write<char>(0x66);
+    this->bw->template write<int, Endianness::BE>(0x11223344);
+    this->bw->template write<char>(0x66);
     ASSERT_TRUE(this->validate(std::vector<char>{ 0x11, 0x22, 0x33, 0x44, 0x66 }));
 }
 
@@ -132,52 +131,52 @@ TYPED_TEST(BinaryWriterTest, WriteCompound) {
         int a = 0x11223344;
         int b = 0x12233445;
     } t;
-    this->br->write(t);
+    this->bw->write(t);
     ASSERT_TRUE(this->validate(std::vector<char>{ 0x44, 0x33, 0x22, 0x11, 0x45, 0x34, 0x23, 0x12 }));
 }
 
 TYPED_TEST(BinaryWriterTest, WriteCharArray) {
     const std::vector<char> data{ 0x44, 0x33, 0x22, 0x11, 0x66 };
-    this->br->write(data.data(), data.size());
+    this->bw->write(data.data(), data.size());
     ASSERT_TRUE(this->validate(data));
 }
 
 TYPED_TEST(BinaryWriterTest, WriteNonCharArrayLE) {
     const std::vector<int> srcData{ 0x11223344, 0x12233445 };
-    this->br->write(srcData.data(), srcData.size());
+    this->bw->write(srcData.data(), srcData.size());
     ASSERT_TRUE(this->validate(std::vector<char>{ 0x44, 0x33, 0x22, 0x11, 0x45, 0x34, 0x23, 0x12 }));
 }
 
 TYPED_TEST(BinaryWriterTest, WriteNonCharArrayBE) {
     const std::vector<int> srcData{ 0x11223344, 0x12233445 };
-    this->br->template write<int, Endianness::BE>(srcData.data(), srcData.size());
+    this->bw->template write<int, Endianness::BE>(srcData.data(), srcData.size());
     ASSERT_TRUE(this->validate(std::vector<char>{ 0x11, 0x22, 0x33, 0x44, 0x12, 0x23, 0x34, 0x45 }));
 }
 
 TYPED_TEST(BinaryWriterTest, SeekBackAndOverride) {
-    this->br->seek(4);
-    this->br->template write<char>(0x66);
-    this->br->seek(0);
-    this->br->write(0x11223344);
+    this->bw->seek(4);
+    this->bw->template write<char>(0x66);
+    this->bw->seek(0);
+    this->bw->write(0x11223344);
     ASSERT_TRUE(this->validate(std::vector<char>{ 0x44, 0x33, 0x22, 0x11, 0x66 }));
 }
 
 TYPED_TEST(BinaryWriterTest, AlignAlreadyAligned) {
-    this->br->align();
+    this->bw->align();
     ASSERT_TRUE(this->validate(std::vector<char>{}));
 }
 
 TYPED_TEST(BinaryWriterTest, Align) {
-    this->br->seek(1);
-    this->br->align();
+    this->bw->seek(1);
+    this->bw->align();
     ASSERT_TRUE((this->validate(std::vector<char>(0x10, '\0'))));
 }
 
 TYPED_TEST(BinaryWriterTest, WriteStrings) {
-    this->br->writeString("Test");
-    this->br->template writeString<Endianness::LE>("Test");
-    this->br->writeCString("Test");
-    this->br->template writeCString<Endianness::LE>("Test");
+    this->bw->writeString("Test");
+    this->bw->template writeString<Endianness::LE>("Test");
+    this->bw->writeCString("Test");
+    this->bw->template writeCString<Endianness::LE>("Test");
 
     const std::vector<char> soll{ 0x54, 0x65, 0x73, 0x74, 0x74, 0x73, 0x65, 0x54, 0x54,
                                   0x65, 0x73, 0x74, 0x00, 0x74, 0x73, 0x65, 0x54, 0x00 };
@@ -185,6 +184,66 @@ TYPED_TEST(BinaryWriterTest, WriteStrings) {
     ASSERT_TRUE(this->validate(soll));
 }
 
+TYPED_TEST(BinaryWriterTest, getSink) {
+    ASSERT_TRUE(this->bw->getSink());
+}
+
 #endif // GTEST_HAS_TYPED_TEST
+
+
+class BinaryWriterSpecialMemberFunctions : public testing::Test {
+
+protected:
+    std::filesystem::path tmpFile;
+
+    void SetUp() override {
+        this->tmpFile =
+        std::filesystem::temp_directory_path() / "BinaryWriterSpecialMemberFunctionsTmpFile.bin";
+    }
+
+    void TearDown() override {
+        if(std::filesystem::exists(tmpFile))
+            std::filesystem::remove(tmpFile);
+    }
+};
+
+TEST_F(BinaryWriterSpecialMemberFunctions, VoidCtor) {
+    BinaryWriter bw{};
+    bw.tell();
+}
+
+TEST_F(BinaryWriterSpecialMemberFunctions, CharCtor) {
+    BinaryWriter bw(tmpFile.generic_string().c_str());
+    bw.tell();
+}
+
+TEST_F(BinaryWriterSpecialMemberFunctions, StringCtor) {
+    BinaryWriter bw(tmpFile.generic_string());
+    bw.tell();
+}
+
+TEST_F(BinaryWriterSpecialMemberFunctions, PathCtor) {
+    BinaryWriter bw(tmpFile);
+    bw.tell();
+}
+
+TEST_F(BinaryWriterSpecialMemberFunctions, MoveCtor) {
+    BinaryWriter bw(tmpFile);
+    BinaryWriter bw2(std::move(bw));
+    bw2.tell();
+}
+
+TEST_F(BinaryWriterSpecialMemberFunctions, FromSinkCtor) {
+    std::unique_ptr<ISink> sink = std::make_unique<BufferSink>();
+    BinaryWriter bw(std::move(sink));
+    bw.tell();
+}
+
+TEST_F(BinaryWriterSpecialMemberFunctions, MoveAssign) {
+    BinaryWriter bw(tmpFile);
+    BinaryWriter bw2;
+    bw2 = std::move(bw);
+    bw2.tell();
+}
 
 } // namespace
