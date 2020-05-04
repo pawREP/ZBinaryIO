@@ -259,7 +259,8 @@ inline BinaryReader::BinaryReader(std::unique_ptr<ISource> source) : source(std:
 }
 
 inline BinaryReader& BinaryReader::operator=(BinaryReader&& other) noexcept {
-    return BinaryReader(std::move(other.source));
+    source = std::move(other.source);
+    return *this;
 }
 
 inline int64_t BinaryReader::tell() const noexcept {
