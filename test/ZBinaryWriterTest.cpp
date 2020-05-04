@@ -209,41 +209,41 @@ protected:
 
 TEST_F(BinaryWriterSpecialMemberFunctions, VoidCtor) {
     BinaryWriter bw{};
-    bw.tell();
+    ZBIO_UNUSED(bw.tell());
 }
 
 TEST_F(BinaryWriterSpecialMemberFunctions, CharCtor) {
     BinaryWriter bw(tmpFile.generic_string().c_str());
-    bw.tell();
+    ZBIO_UNUSED(bw.tell());
 }
 
 TEST_F(BinaryWriterSpecialMemberFunctions, StringCtor) {
     BinaryWriter bw(tmpFile.generic_string());
-    bw.tell();
+    ZBIO_UNUSED(bw.tell());
 }
 
 TEST_F(BinaryWriterSpecialMemberFunctions, PathCtor) {
     BinaryWriter bw(tmpFile);
-    bw.tell();
+    ZBIO_UNUSED(bw.tell());
 }
 
 TEST_F(BinaryWriterSpecialMemberFunctions, MoveCtor) {
     BinaryWriter bw(tmpFile);
     BinaryWriter bw2(std::move(bw));
-    bw2.tell();
+    ZBIO_UNUSED(bw2.tell());
 }
 
 TEST_F(BinaryWriterSpecialMemberFunctions, FromSinkCtor) {
     std::unique_ptr<ISink> sink = std::make_unique<BufferSink>();
     BinaryWriter bw(std::move(sink));
-    bw.tell();
+    ZBIO_UNUSED(bw.tell());
 }
 
 TEST_F(BinaryWriterSpecialMemberFunctions, MoveAssign) {
     BinaryWriter bw(tmpFile);
     BinaryWriter bw2;
     bw2 = std::move(bw);
-    bw2.tell();
+    ZBIO_UNUSED(bw2.tell());
 }
 
 } // namespace

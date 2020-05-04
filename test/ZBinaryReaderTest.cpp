@@ -438,17 +438,17 @@ protected:
 
 TEST_F(BinaryReaderSpecialMemberFunctions, CharCtor) {
     BinaryReader br(tmpFile.generic_string().c_str());
-    br.tell();
+    ZBIO_UNUSED(br.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, StringCtor) {
     BinaryReader br(tmpFile.generic_string());
-    br.tell();
+    ZBIO_UNUSED(br.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, PathCtor) {
     BinaryReader br(tmpFile);
-    br.tell();
+    ZBIO_UNUSED(br.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, BufferCtor) {
@@ -456,7 +456,7 @@ TEST_F(BinaryReaderSpecialMemberFunctions, BufferCtor) {
     const char buf[bufSize]{};
 
     BinaryReader br(buf, bufSize);
-    br.tell();
+    ZBIO_UNUSED(br.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, NonOwningBufferCtor) {
@@ -464,7 +464,7 @@ TEST_F(BinaryReaderSpecialMemberFunctions, NonOwningBufferCtor) {
     const char buf[bufSize]{};
 
     BinaryReader br(buf, bufSize);
-    br.tell();
+    ZBIO_UNUSED(br.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, OwningBufferCtor) {
@@ -472,27 +472,26 @@ TEST_F(BinaryReaderSpecialMemberFunctions, OwningBufferCtor) {
     auto buf = std::make_unique<char[]>(bufSize);
 
     BinaryReader br(std::move(buf), bufSize);
-    br.tell();
+    ZBIO_UNUSED(br.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, MoveCtor) {
     BinaryReader br0(tmpFile);
     BinaryReader br1(std::move(br0));
-
-    br1.tell();
+    ZBIO_UNUSED(br1.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, FromSourceCtor) {
     std::unique_ptr<ISource> source = std::make_unique<FileSource>(tmpFile);
     BinaryReader br0(std::move(source));
-    br0.tell();
+    ZBIO_UNUSED(br0.tell());
 }
 
 TEST_F(BinaryReaderSpecialMemberFunctions, MoveAssign) {
     BinaryReader br0(tmpFile);
     BinaryReader br1(tmpFile);
     br1 = std::move(br0);
-    br1.tell();
+    ZBIO_UNUSED(br1.tell());
 }
 
 class CoverageTrackingSourceTestFixture : public testing::Test {
