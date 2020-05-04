@@ -339,11 +339,11 @@ TYPED_TEST(BinaryReaderTestFixture, PeekFundamentalTArrayBE) {
     constexpr int arrLen = 4;
 
     FT soll[arrLen]{};
-    this->br->peek<FT, Endianness::BE>(soll, arrLen);
+    this->br->template peek<FT, Endianness::BE>(soll, arrLen);
     ASSERT_EQ(this->br->tell(), 0);
 
     FT is[arrLen]{};
-    this->br->read<FT, Endianness::BE>(is, arrLen);
+    this->br->template read<FT, Endianness::BE>(is, arrLen);
     ASSERT_FALSE(memcmp(soll, is, sizeof(soll)));
 }
 
