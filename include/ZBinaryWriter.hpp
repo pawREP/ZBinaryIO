@@ -128,8 +128,6 @@ inline FileSink::FileSink(const std::string& path) : FileSink(std::filesystem::p
 inline FileSink::FileSink(const std::filesystem::path& path) {
     ofs.exceptions(std::ios::failbit | std::ios::badbit);
     ofs.open(path, std::ios::binary);
-    if(!ofs.is_open())
-        throw std::runtime_error("Failed to open file");
 }
 
 inline FileSink::~FileSink() {

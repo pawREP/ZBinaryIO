@@ -162,8 +162,6 @@ inline FileSource::FileSource(const std::filesystem::path& path) : size_(0) {
 
     ifs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     ifs.open(path.generic_string());
-    if(!ifs.is_open())
-        throw std::runtime_error("Failed to open file");
 }
 
 inline FileSource::~FileSource() {
@@ -173,16 +171,12 @@ inline FileSource::~FileSource() {
 
 inline void FileSource::read(char* dst, int64_t len) {
     ifs.read(dst, len);
-    if(ifs.bad())
-        throw std::runtime_error("Read fail");
 }
 
 inline void FileSource::peek(char* dst, int64_t len) const {
     auto o = tell();
     ifs.read(dst, len);
     ifs.seekg(o, std::ios::beg);
-    if(ifs.bad())
-        throw std::runtime_error("Peek fail");
 }
 
 inline void FileSource::seek(int64_t offset) {
