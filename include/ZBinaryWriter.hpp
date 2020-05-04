@@ -235,7 +235,7 @@ inline void BinaryWriter::align() {
     write(zero, paddingLen);
 }
 
-inline [[nodiscard]] int64_t BinaryWriter::tell() {
+[[nodiscard]] inline int64_t BinaryWriter::tell() {
     return sink->tell();
 }
 
@@ -264,7 +264,7 @@ inline std::optional<std::vector<char>> BinaryWriter::release() {
     return sink->release();
 }
 
-inline [[nodiscard]] const ISink* BinaryWriter::getSink() const noexcept {
+[[nodiscard]] inline const ISink* BinaryWriter::getSink() const noexcept {
     return sink.get();
 }
 // ZBinaryReader Impl End
