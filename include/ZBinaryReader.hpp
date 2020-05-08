@@ -203,9 +203,7 @@ inline BufferSource::BufferSource(std::unique_ptr<char[]> data, int64_t data_siz
 }
 
 inline void BufferSource::read(char* dst, int64_t len) {
-    if(cur + len > bufferSize)
-        throw std::runtime_error("Out of bounds read");
-    memcpy(dst, &(buffer[cur]), static_cast<size_t>(len));
+    peek(dst, len);
     cur += len;
 }
 
