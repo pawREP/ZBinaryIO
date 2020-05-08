@@ -404,8 +404,6 @@ inline void CoverageTrackingSource<Source>::read(char* dst, int64_t len) {
 template <typename Source>
 inline bool CoverageTrackingSource<Source>::completeCoverage(const BinaryReader* br) {
     auto coverageReader = dynamic_cast<const CoverageTrackingSource<Source>*>(br->getSource());
-    if(!coverageReader)
-        throw std::bad_cast();
     return coverageReader->completeCoverageInternal();
 }
 
