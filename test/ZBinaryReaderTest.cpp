@@ -529,7 +529,6 @@ TEST_F(CoverageTrackingSourceTestFixture, DoubleRead) {
 TEST_F(CoverageTrackingSourceTestFixture, DoublePeek) {
     using T = int;
     ZBIO_UNUSED(br->peek<T>());
-    br->seek(br->tell() - sizeof(T));
     ZBIO_UNUSED(br->peek<T>());
 }
 
