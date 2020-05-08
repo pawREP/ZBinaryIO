@@ -208,13 +208,15 @@ inline void BufferSource::read(char* dst, int64_t len) {
 }
 
 inline void BufferSource::peek(char* dst, int64_t len) const {
-    if(cur + len > bufferSize)
-        throw std::runtime_error("Out of bounds read");
+    if(cur + len > size())
+        throw std::runtime_error("OOR read/peek");
     memcpy(dst, &(buffer[cur]), len);
 }
 
 inline void BufferSource::seek(int64_t offset) {
-    cur = offset; // Seeking to OOB is not an error
+    if(offset < 0)
+        throw std::runtime_error("negative OOR seek");
+    cur = offset; // Seeking to positive OOB is not an error
 }
 
 inline int64_t BufferSource::tell() const noexcept {

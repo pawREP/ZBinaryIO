@@ -109,9 +109,9 @@ TYPED_TEST(BinaryWriterTest, SeekTell) {
     this->bw->seek(offset2);
     ASSERT_EQ(this->bw->tell(), offset2);
 
-    // TODO: Seek negative
-
     ASSERT_TRUE(this->validate(std::vector<char>(offset2, '\0')));
+
+    ASSERT_THROW(this->bw->seek(-1), std::exception);
 }
 
 TYPED_TEST(BinaryWriterTest, WriteTrivial) {

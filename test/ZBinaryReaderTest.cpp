@@ -168,10 +168,7 @@ TYPED_TEST(BinaryReaderTestFixture, SeekTell) {
     // Seek past end
     this->validatedSeekTell(sizeof(testData) + 1);
 
-    // TODO: Define behaviour for seeking negative values
-    // seek to neg offset
-    // br.seek(-1);
-    // ASSERT_EQ(br.tell(), 0);
+    ASSERT_THROW(this->br->seek(-1), std::runtime_error);
 }
 
 TYPED_TEST(BinaryReaderTestFixture, ReadPrimitiveTypes) {
