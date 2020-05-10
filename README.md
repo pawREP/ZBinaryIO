@@ -1,5 +1,5 @@
 # ZBinaryIO
-[![Build Status](https://travis-ci.org/pawREP/ZBinaryReader.svg?branch=master)](https://travis-ci.org/pawREP/ZBinaryReader)
+[![Build Status](https://travis-ci.org/pawREP/ZBinaryIO.svg?branch=master)](https://travis-ci.org/pawREP/ZBinaryReader)
 [![codecov](https://codecov.io/gh/pawREP/ZBinaryReader/branch/master/graph/badge.svg)](https://codecov.io/gh/pawREP/ZBinaryReader) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/882591c88b0b45128142c94b47de7e22)](https://www.codacy.com/manual/pawREP/ZBinaryReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pawREP/ZBinaryReader&amp;utm_campaign=Badge_Grade)
 
